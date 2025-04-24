@@ -1,0 +1,91 @@
+# Git gotchas on WSL2
+
+[jpmens/jo - JSON output from a shell](https://github.com/jpmens/jo?tab=readme-ov-file)
+
+Windows WSL2
+As shown in [#175](https://github.com/jpmens/jo/issues/175) when using git on Windows WSL2 it should be necessary to disable automatic CRLF conversion in git or the tests will fail:
+
+git config --local core.autocrlf false
+
+---
+The command git config --get-regexp '.' will list all Git configuration variables (and their values) that are defined in any of the Git configuration files (system, global, or local repository). It interprets . as a regular expression that matches any character, effectively retrieving all keys. 
+Here's a breakdown: 
+git config: This is the command for managing Git configuration settings.
+--get-regexp: This option tells Git to interpret the provided argument as a regular expression and to list any keys that match the expression.
+'.': This is a regular expression that matches any single character. The dot (.) is a wildcard in regular expressions, and . by itself matches any character.
+In essence, the command searches for all configuration keys in your Git configuration files and prints out each key along with its corresponding value. The regular expression . ensures that every key will match, effectively listing all keys and values. 
+For example, if your Git configuration contains entries like core.filemode true and user.email user@example.com, then the command git config --get-regexp '.' would output these entries (along with others, if any).
+
+---
+
+[https://github.com/jpmens/jo - json output from shell- Tests failing (Ubuntu 20.04) #175 Closed](https://github.com/jpmens/jo/issues/175)
+
+isotopp
+on Mar 19, 2022
+Contributor
+Author
+Aaargh.
+
+kris@Kris-Yoga:~/C/jo$ git config  --global --get-regexp '.'
+user.email kris-git@koehntopp.de
+user.name Kristian Koehntopp
+core.excludesfile /home/kris/win/.gitignore
+**core.autocrlf true**
+
+**That's set so that the Linux- and Windows-Side of the machine can both git the files. If not set, bad things happen with everything else.**
+
+**kris@Kris-Yoga:~/C/jo$ git config --local core.autocrlf false**
+
+
+**So, you have to set core.autocrlf false inside the 'jo' repository to make things work**
+
+kris@Kris-Yoga:~/C/jo$ git config --get-regexp '.'
+user.email kris-git@koehntopp.de
+user.name Kristian Koehntopp
+core.excludesfile /home/kris/win/.gitignore
+core.autocrlf true
+core.repositoryformatversion 0
+core.filemode true
+core.bare false
+core.logallrefupdates true
+**core.autocrlf false**
+remote.origin.url git@github.com:jpmens/jo.git
+remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+branch.master.remote origin
+branch.master.merge refs/heads/master
+and
+
+kris@Kris-Yoga:~/C/jo$ git reset --hard
+HEAD is now at eefaf71 change URL again         addresses #174
+kris@Kris-Yoga:~/C/jo$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+nothing to commit, working tree clean
+kris@Kris-Yoga:~/C/jo$ autoreconf -i
+configure.ac:7: installing 'build-aux/compile'
+configure.ac:32: installing 'build-aux/install-sh'
+configure.ac:32: installing 'build-aux/missing'
+Makefile.am: installing 'build-aux/depcomp'
+kris@Kris-Yoga:~/C/jo$ ./configure > /dev/null
+configure: WARNING: pandoc not found, man pages rebuild will not be possible
+kris@Kris-Yoga:~/C/jo$ make
+  CC       jo.o
+  CC       json.o
+  CC       base64.o
+  CCLD     jo
+kris@Kris-Yoga:~/C/jo$ make check
+make  check-TESTS
+make[1]: Entering directory '/home/kris/C/jo'
+make[2]: Entering directory '/home/kris/C/jo'
+PASS: tests/jo.test 1 -  basic logo
+PASS: tests/jo.test 2 -  basic logo (stdin)
+PASS: tests/jo.test 3 -  basic two values
+PASS: tests/jo.test 4 -  nested with executable
+PASS: tests/jo.test 5 -  nested native
+...
+**Ok, so something in that test script thingie is incredibly sensitive to line endings.**
+
+
+
+
