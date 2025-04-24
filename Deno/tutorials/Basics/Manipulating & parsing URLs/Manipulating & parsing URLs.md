@@ -22,3 +22,23 @@ console.log(url.origin); // https://deno.land
 console.log(url.pathname); // /manual/introduction
 console.log(url.protocol); // https:
 ```
+When parsing a url, we aoften need to read the search parameters
+
+`url = new URL("https://docs.deno.com/api/deno?s=Deno.readFile");`
+
+`console.log(url.searchParams.get("s"));`
+
+We are able to manipulate any of these parameters on the fly.
+
+```markdown
+url.host = "deno.com";
+url.protocol = "http:";
+
+console.log(url.href); // http://deno.com/api?s=Deno.readFile
+```
+Run this example locally using the Deno CLI:
+
+`deno run https://docs.deno.com/examples/scripts/url_parsing.ts`
+
+Let us see how many properties / parameters are there
+
